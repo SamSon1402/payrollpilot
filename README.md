@@ -146,10 +146,9 @@ curl 'http://localhost:3000/api/payroll-runs/cmxxx.../employees?status=SETTLED'
 - **Auth + multi-tenancy.** Routes take `triggeredBy` from the body; in production this comes from a session JWT and a `withAuth(orgId, roles)` wrapper.
 - **Real PayFit / Plaid Payments wiring.** Stubs in `hris.ts` and `payments.ts` return shapes that match the real APIs. Real keys + the official SDK is the next commit.
 - **Multi-currency FX.** Schema supports it (`currency` per employee), the FX_RATE_STALE exception type is wired, but rate locking activity not implemented.
-- **Frontend.** The interactive demo at [samson1402.github.io](https://samson1402.github.io) is the UI counterpart.
 - **Tests.** Golden tests for the delegate-chain resolver and a workflow replay test (using `TestWorkflowEnvironment`) are the first additions I'd make.
 - **Observability.** OpenTelemetry across the Inngest → Temporal → activity boundaries; Datadog metrics on per-stage duration.
 
 ---
 
-Built by Sameer M · 2026 · [samson1402.github.io](https://samson1402.github.io)
+Built by Sameer M · 2026 · 
