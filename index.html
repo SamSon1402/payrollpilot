@@ -1,0 +1,1361 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PayrollPilot - Autonomous Payroll Exception Console | Round Treasury</title>
+    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --teal: #14b8a6;
+            --teal-glow: rgba(20, 184, 166, 0.4);
+            --cyan: #06b6d4;
+            --sky: #0ea5e9;
+            --amber: #f59e0b;
+            --rose: #f43f5e;
+            --emerald: #10b981;
+            --violet: #8b5cf6;
+            --bg-dark: #060814;
+            --bg-card: #0c1224;
+            --bg-elevated: #161e36;
+            --bg-deeper: #04050d;
+            --text-primary: #f1f5f9;
+            --text-secondary: #94a3b8;
+            --text-muted: #64748b;
+            --border: #1f2a47;
+            --border-bright: #2d3a5e;
+            --pilot-gradient: linear-gradient(135deg, #14b8a6 0%, #06b6d4 50%, #0ea5e9 100%);
+            --warn-gradient: linear-gradient(135deg, #f59e0b 0%, #f43f5e 100%);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Sora', sans-serif;
+            background: var(--bg-dark);
+            color: var(--text-primary);
+            min-height: 100vh;
+            background-image:
+                radial-gradient(ellipse at 0% 0%, rgba(20, 184, 166, 0.12) 0%, transparent 50%),
+                radial-gradient(ellipse at 100% 100%, rgba(14, 165, 233, 0.10) 0%, transparent 50%);
+            background-attachment: fixed;
+        }
+
+        .header {
+            background: linear-gradient(180deg, rgba(20, 184, 166, 0.08) 0%, transparent 100%);
+            border-bottom: 1px solid var(--border);
+            padding: 0.85rem 2rem;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            backdrop-filter: blur(24px);
+        }
+
+        .header-content {
+            max-width: 1800px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.85rem;
+        }
+
+        .logo-icon {
+            width: 48px;
+            height: 48px;
+            background: var(--pilot-gradient);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            position: relative;
+        }
+
+        .logo-icon::after {
+            content: '';
+            position: absolute;
+            inset: -3px;
+            background: var(--pilot-gradient);
+            border-radius: 15px;
+            z-index: -1;
+            opacity: 0.5;
+            filter: blur(10px);
+        }
+
+        .logo-text {
+            font-size: 1.55rem;
+            font-weight: 800;
+            background: var(--pilot-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: -0.5px;
+        }
+
+        .logo-subtitle {
+            font-size: 0.6rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            font-weight: 500;
+        }
+
+        .header-badges {
+            display: flex;
+            gap: 0.45rem;
+            flex-wrap: wrap;
+        }
+
+        .badge {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            padding: 0.4rem 0.75rem;
+            border-radius: 6px;
+            font-size: 0.65rem;
+            color: var(--text-secondary);
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 500;
+        }
+
+        .badge.live {
+            background: rgba(20, 184, 166, 0.15);
+            border-color: var(--teal);
+            color: var(--teal);
+        }
+
+        .badge.live::before {
+            content: '';
+            display: inline-block;
+            width: 6px;
+            height: 6px;
+            background: var(--teal);
+            border-radius: 50%;
+            margin-right: 6px;
+            animation: livePulse 1.5s ease-in-out infinite;
+        }
+
+        @keyframes livePulse {
+            0%, 100% { opacity: 1; box-shadow: 0 0 0 0 var(--teal-glow); }
+            50% { opacity: 0.7; box-shadow: 0 0 0 8px transparent; }
+        }
+
+        .main {
+            max-width: 1800px;
+            margin: 0 auto;
+            padding: 1.5rem 2rem 3rem;
+        }
+
+        .hero {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .hero h1 {
+            font-size: 2.6rem;
+            font-weight: 800;
+            margin-bottom: 0.5rem;
+            background: var(--pilot-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: -1px;
+        }
+
+        .hero p {
+            color: var(--text-secondary);
+            font-size: 1.05rem;
+            max-width: 720px;
+            margin: 0 auto;
+        }
+
+        .hero-meta {
+            display: inline-flex;
+            gap: 1.5rem;
+            margin-top: 1rem;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.7rem;
+            color: var(--text-muted);
+        }
+
+        .hero-meta span strong { color: var(--teal); }
+
+        .workspace {
+            display: grid;
+            grid-template-columns: 1fr 400px;
+            gap: 1.25rem;
+        }
+
+        @media (max-width: 1300px) {
+            .workspace { grid-template-columns: 1fr; }
+        }
+
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            overflow: hidden;
+        }
+
+        .card-header {
+            padding: 1rem 1.25rem;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: linear-gradient(180deg, rgba(22, 30, 54, 0.5) 0%, transparent 100%);
+        }
+
+        .card-title {
+            font-size: 0.9rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .card-body { padding: 1.25rem; }
+
+        /* Payroll run header */
+        .run-summary {
+            background: var(--bg-elevated);
+            border-radius: 12px;
+            padding: 1rem 1.2rem;
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1rem;
+            margin-bottom: 1.2rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .run-summary::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: var(--pilot-gradient);
+        }
+
+        .summary-item {
+            border-right: 1px solid var(--border);
+            padding-right: 1rem;
+        }
+
+        .summary-item:last-child { border-right: none; }
+
+        .summary-label {
+            font-size: 0.62rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 0.3rem;
+            font-weight: 600;
+        }
+
+        .summary-value {
+            font-size: 1.25rem;
+            font-weight: 800;
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--teal);
+            line-height: 1.1;
+        }
+
+        .summary-value.muted { color: var(--text-secondary); font-size: 0.95rem; }
+        .summary-value.warn { color: var(--amber); }
+
+        /* Pipeline */
+        .pipeline {
+            position: relative;
+            margin-bottom: 1.2rem;
+            padding: 0 0.5rem;
+        }
+
+        .pipeline-stages {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 0.5rem;
+            position: relative;
+        }
+
+        .pipeline-track {
+            position: absolute;
+            top: 26px;
+            left: 8%;
+            right: 8%;
+            height: 2px;
+            background: var(--border);
+            z-index: 0;
+        }
+
+        .pipeline-progress {
+            position: absolute;
+            top: 26px;
+            left: 8%;
+            height: 2px;
+            background: var(--pilot-gradient);
+            z-index: 1;
+            width: 0%;
+            transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 0 12px var(--teal);
+        }
+
+        .stage {
+            position: relative;
+            z-index: 2;
+            text-align: center;
+            cursor: pointer;
+        }
+
+        .stage-circle {
+            width: 52px;
+            height: 52px;
+            margin: 0 auto 0.55rem;
+            background: var(--bg-elevated);
+            border: 2px solid var(--border);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3rem;
+            transition: all 0.4s;
+            position: relative;
+        }
+
+        .stage.active .stage-circle {
+            background: rgba(20, 184, 166, 0.2);
+            border-color: var(--teal);
+            box-shadow: 0 0 0 4px rgba(20, 184, 166, 0.2), 0 0 20px var(--teal-glow);
+            animation: stagePulse 1.5s ease-in-out infinite;
+        }
+
+        .stage.done .stage-circle {
+            background: rgba(16, 185, 129, 0.2);
+            border-color: var(--emerald);
+            color: var(--emerald);
+        }
+
+        .stage.exception .stage-circle {
+            background: rgba(245, 158, 11, 0.2);
+            border-color: var(--amber);
+            animation: warningPulse 1.2s ease-in-out infinite;
+        }
+
+        @keyframes stagePulse {
+            0%, 100% { box-shadow: 0 0 0 4px rgba(20, 184, 166, 0.2), 0 0 20px var(--teal-glow); }
+            50% { box-shadow: 0 0 0 8px rgba(20, 184, 166, 0.1), 0 0 30px var(--teal-glow); }
+        }
+
+        @keyframes warningPulse {
+            0%, 100% { box-shadow: 0 0 0 4px rgba(245, 158, 11, 0.2); }
+            50% { box-shadow: 0 0 0 8px rgba(245, 158, 11, 0.1); }
+        }
+
+        .stage-name {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+        }
+
+        .stage.active .stage-name, .stage.done .stage-name { color: var(--text-primary); }
+        .stage.exception .stage-name { color: var(--amber); }
+
+        .stage-status {
+            font-size: 0.6rem;
+            color: var(--text-muted);
+            font-family: 'JetBrains Mono', monospace;
+            margin-top: 0.15rem;
+            min-height: 14px;
+        }
+
+        /* Controls */
+        .controls {
+            display: flex;
+            gap: 0.55rem;
+            margin-bottom: 1.2rem;
+        }
+
+        .control-btn {
+            flex: 1;
+            padding: 0.85rem;
+            background: var(--bg-elevated);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            color: var(--text-primary);
+            font-family: 'Sora', sans-serif;
+            font-size: 0.82rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.45rem;
+        }
+
+        .control-btn:hover:not(:disabled) {
+            border-color: var(--teal);
+            background: rgba(20, 184, 166, 0.1);
+        }
+
+        .control-btn.primary {
+            background: var(--pilot-gradient);
+            border: none;
+            color: white;
+        }
+
+        .control-btn.primary:hover {
+            box-shadow: 0 8px 25px rgba(20, 184, 166, 0.4);
+        }
+
+        .control-btn.danger:hover {
+            border-color: var(--amber);
+            background: rgba(245, 158, 11, 0.1);
+            color: var(--amber);
+        }
+
+        .control-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        /* Employee list */
+        .employee-section {
+            background: var(--bg-elevated);
+            border-radius: 12px;
+            padding: 1rem;
+        }
+
+        .section-title {
+            font-size: 0.78rem;
+            font-weight: 700;
+            margin-bottom: 0.85rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .section-title span.meta {
+            font-size: 0.65rem;
+            color: var(--text-muted);
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 500;
+        }
+
+        .employee-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 0.5rem;
+            max-height: 320px;
+            overflow-y: auto;
+        }
+
+        .employee-row {
+            background: var(--bg-deeper);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 0.65rem 0.8rem;
+            display: flex;
+            align-items: center;
+            gap: 0.7rem;
+            transition: all 0.3s;
+            position: relative;
+        }
+
+        .employee-row.processing {
+            border-color: var(--teal);
+            box-shadow: 0 0 0 2px rgba(20, 184, 166, 0.15);
+        }
+
+        .employee-row.paid {
+            border-color: var(--emerald);
+            background: rgba(16, 185, 129, 0.05);
+        }
+
+        .employee-row.exception {
+            border-color: var(--amber);
+            background: rgba(245, 158, 11, 0.06);
+        }
+
+        .employee-avatar {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: var(--pilot-gradient);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.72rem;
+            font-weight: 700;
+            color: white;
+            flex-shrink: 0;
+        }
+
+        .employee-info { flex: 1; min-width: 0; }
+
+        .employee-name {
+            font-size: 0.78rem;
+            font-weight: 600;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .employee-meta {
+            font-size: 0.6rem;
+            color: var(--text-muted);
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .employee-amount {
+            font-size: 0.78rem;
+            font-weight: 700;
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--text-secondary);
+        }
+
+        .employee-row.paid .employee-amount { color: var(--emerald); }
+        .employee-row.exception .employee-amount { color: var(--amber); }
+
+        /* Sidebar */
+        .sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        /* Exception panel */
+        .exception-card {
+            background: linear-gradient(180deg, rgba(245, 158, 11, 0.06) 0%, var(--bg-elevated) 100%);
+            border-radius: 12px;
+            padding: 1rem;
+            border: 1px solid rgba(245, 158, 11, 0.3);
+            display: none;
+        }
+
+        .exception-card.active { display: block; animation: slideIn 0.3s ease; }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(-6px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .exception-header {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            margin-bottom: 0.7rem;
+        }
+
+        .exception-icon {
+            width: 36px;
+            height: 36px;
+            background: rgba(245, 158, 11, 0.2);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.05rem;
+        }
+
+        .exception-title {
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: var(--amber);
+        }
+
+        .exception-subtitle {
+            font-size: 0.65rem;
+            color: var(--text-muted);
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .exception-detail {
+            background: var(--bg-deeper);
+            border-radius: 8px;
+            padding: 0.75rem;
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.7rem;
+            border-left: 3px solid var(--amber);
+        }
+
+        .exception-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .exception-actions button {
+            flex: 1;
+            padding: 0.6rem;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            background: var(--bg-deeper);
+            color: var(--text-primary);
+            font-family: 'Sora', sans-serif;
+            font-size: 0.72rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .exception-actions button.resolve {
+            background: rgba(16, 185, 129, 0.15);
+            border-color: var(--emerald);
+            color: var(--emerald);
+        }
+
+        .exception-actions button.resolve:hover {
+            background: var(--emerald);
+            color: white;
+        }
+
+        .exception-actions button:hover {
+            border-color: var(--text-secondary);
+        }
+
+        /* Treasury card */
+        .treasury-balance {
+            background: var(--bg-deeper);
+            border-radius: 10px;
+            padding: 0.9rem;
+            margin-bottom: 0.7rem;
+        }
+
+        .treasury-label {
+            font-size: 0.65rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 0.3rem;
+        }
+
+        .treasury-amount {
+            font-size: 1.55rem;
+            font-weight: 800;
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--teal);
+            line-height: 1.1;
+        }
+
+        .treasury-sub {
+            font-size: 0.65rem;
+            color: var(--text-muted);
+            font-family: 'JetBrains Mono', monospace;
+            margin-top: 0.2rem;
+        }
+
+        .treasury-flow {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.5rem;
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+            padding: 0.4rem 0.6rem;
+            background: var(--bg-deeper);
+            border-radius: 6px;
+            margin-bottom: 0.4rem;
+        }
+
+        .treasury-flow .arrow {
+            color: var(--teal);
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .treasury-flow .amount {
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--cyan);
+            font-weight: 600;
+        }
+
+        /* Activity log */
+        .activity-log {
+            max-height: 280px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 0.4rem;
+        }
+
+        .activity-entry {
+            display: flex;
+            gap: 0.55rem;
+            padding: 0.55rem 0.7rem;
+            background: var(--bg-deeper);
+            border-radius: 8px;
+            border-left: 2px solid var(--teal);
+            font-size: 0.72rem;
+            animation: slideInLeft 0.3s ease;
+        }
+
+        .activity-entry.amber { border-left-color: var(--amber); }
+        .activity-entry.emerald { border-left-color: var(--emerald); }
+        .activity-entry.rose { border-left-color: var(--rose); }
+
+        @keyframes slideInLeft {
+            from { opacity: 0; transform: translateX(-6px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        .activity-icon { font-size: 0.95rem; flex-shrink: 0; }
+
+        .activity-content { flex: 1; min-width: 0; }
+
+        .activity-msg {
+            color: var(--text-primary);
+            margin-bottom: 0.1rem;
+        }
+
+        .activity-meta {
+            color: var(--text-muted);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.62rem;
+        }
+
+        /* Processing overlay */
+        .processing-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(6, 8, 20, 0.97);
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            backdrop-filter: blur(8px);
+        }
+
+        .processing-overlay.active { display: flex; }
+
+        .pilot-animation {
+            width: 130px;
+            height: 130px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            margin-bottom: 2rem;
+        }
+
+        .pilot-ring {
+            position: absolute;
+            border: 3px solid var(--teal);
+            border-top-color: transparent;
+            border-radius: 50%;
+            animation: spin 1.5s linear infinite;
+        }
+
+        .pilot-ring.r1 { width: 130px; height: 130px; }
+        .pilot-ring.r2 { width: 95px; height: 95px; border-color: var(--cyan); border-bottom-color: transparent; border-top-color: transparent; animation-duration: 1.2s; animation-direction: reverse; }
+        .pilot-ring.r3 { width: 60px; height: 60px; border-color: var(--sky); border-top-color: transparent; border-left-color: transparent; animation-duration: 0.9s; }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        .pilot-center {
+            font-size: 2rem;
+            z-index: 1;
+        }
+
+        .processing-text {
+            font-size: 1.15rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .processing-stage {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-bottom: 1.5rem;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .processing-progress {
+            width: 300px;
+            height: 5px;
+            background: var(--bg-elevated);
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        .processing-bar {
+            height: 100%;
+            background: var(--pilot-gradient);
+            width: 0%;
+            transition: width 0.3s;
+        }
+
+        /* Toast */
+        .toast {
+            position: fixed;
+            bottom: 1.5rem;
+            right: 1.5rem;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 0.85rem 1.2rem;
+            display: flex;
+            align-items: center;
+            gap: 0.7rem;
+            box-shadow: 0 15px 50px rgba(0,0,0,0.7);
+            transform: translateY(100px);
+            opacity: 0;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 1000;
+            max-width: 380px;
+        }
+
+        .toast.show { transform: translateY(0); opacity: 1; }
+        .toast-icon { font-size: 1.3rem; }
+        .toast-title { font-size: 0.85rem; font-weight: 600; }
+        .toast-message { font-size: 0.7rem; color: var(--text-muted); }
+
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: var(--bg-deeper); }
+        ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--border-bright); }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="header-content">
+            <div class="logo">
+                <div class="logo-icon">✈️</div>
+                <div>
+                    <div class="logo-text">PayrollPilot</div>
+                    <div class="logo-subtitle">Round Treasury · Autonomous Payroll</div>
+                </div>
+            </div>
+            <div class="header-badges">
+                <span class="badge live">● Active</span>
+                <span class="badge">SEPA · Faster Payments</span>
+                <span class="badge">28 Employees</span>
+                <span class="badge">PayFit Connected</span>
+                <span class="badge">FCA Audited</span>
+            </div>
+        </div>
+    </header>
+
+    <main class="main">
+        <div class="hero">
+            <h1>Autonomous Payroll, Edge Cases Included</h1>
+            <p>From payslip ingestion to executed payment — the happy path is easy. The hard part is what happens when an IBAN is missing, the approver is OOO, or treasury is short. PayrollPilot handles all six stages and routes around exceptions.</p>
+            <div class="hero-meta">
+                <span><strong>•</strong> 6-stage pipeline</span>
+                <span><strong>•</strong> 4 exception classes handled</span>
+                <span><strong>•</strong> Zero manual logins required</span>
+            </div>
+        </div>
+
+        <div class="workspace">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">🛫 Payroll Run · May 2026</h3>
+                    <span style="font-size: 0.7rem; color: var(--text-muted); font-family: 'JetBrains Mono';" id="runStatus">READY</span>
+                </div>
+                <div class="card-body">
+                    <div class="run-summary">
+                        <div class="summary-item">
+                            <div class="summary-label">Run Date</div>
+                            <div class="summary-value muted">28 May 2026</div>
+                        </div>
+                        <div class="summary-item">
+                            <div class="summary-label">Employees</div>
+                            <div class="summary-value" id="empCount">28</div>
+                        </div>
+                        <div class="summary-item">
+                            <div class="summary-label">Total Gross</div>
+                            <div class="summary-value">£187,420</div>
+                        </div>
+                        <div class="summary-item">
+                            <div class="summary-label">Exceptions</div>
+                            <div class="summary-value warn" id="exCount">0</div>
+                        </div>
+                    </div>
+
+                    <div class="pipeline">
+                        <div class="pipeline-track"></div>
+                        <div class="pipeline-progress" id="pipelineProgress"></div>
+                        <div class="pipeline-stages" id="pipelineStages">
+                            <div class="stage" data-stage="0">
+                                <div class="stage-circle">📥</div>
+                                <div class="stage-name">Ingest</div>
+                                <div class="stage-status">PayFit</div>
+                            </div>
+                            <div class="stage" data-stage="1">
+                                <div class="stage-circle">✓</div>
+                                <div class="stage-name">Reconcile</div>
+                                <div class="stage-status">Banks</div>
+                            </div>
+                            <div class="stage" data-stage="2">
+                                <div class="stage-circle">🖋️</div>
+                                <div class="stage-name">Approval</div>
+                                <div class="stage-status">CFO</div>
+                            </div>
+                            <div class="stage" data-stage="3">
+                                <div class="stage-circle">💷</div>
+                                <div class="stage-name">Fund</div>
+                                <div class="stage-status">MMF → GBP</div>
+                            </div>
+                            <div class="stage" data-stage="4">
+                                <div class="stage-circle">🚀</div>
+                                <div class="stage-name">Execute</div>
+                                <div class="stage-status">Faster Pay</div>
+                            </div>
+                            <div class="stage" data-stage="5">
+                                <div class="stage-circle">📋</div>
+                                <div class="stage-name">Confirm</div>
+                                <div class="stage-status">Audit</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="controls">
+                        <button class="control-btn primary" id="runBtn" onclick="startPayroll()">
+                            ▶️ Start Payroll Run
+                        </button>
+                        <button class="control-btn danger" onclick="injectException('iban')">
+                            🚨 Inject: Missing IBAN
+                        </button>
+                        <button class="control-btn danger" onclick="injectException('ooo')">
+                            🚨 Inject: Approver OOO
+                        </button>
+                        <button class="control-btn danger" onclick="injectException('balance')">
+                            🚨 Inject: Low Treasury
+                        </button>
+                        <button class="control-btn" onclick="resetRun()">
+                            🔄 Reset
+                        </button>
+                    </div>
+
+                    <div class="employee-section">
+                        <div class="section-title">
+                            <span>👥 Employee Queue</span>
+                            <span class="meta" id="empProgress">0 / 28 paid</span>
+                        </div>
+                        <div class="employee-grid" id="employeeGrid"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="sidebar">
+                <div class="exception-card" id="exceptionCard">
+                    <div class="exception-header">
+                        <div class="exception-icon" id="excIcon">⚠️</div>
+                        <div>
+                            <div class="exception-title" id="excTitle">Exception Detected</div>
+                            <div class="exception-subtitle" id="excSubtitle">awaiting resolution</div>
+                        </div>
+                    </div>
+                    <div class="exception-detail" id="excDetail"></div>
+                    <div class="exception-actions">
+                        <button class="resolve" id="excResolveBtn" onclick="resolveException()">✓ Auto-Resolve</button>
+                        <button onclick="dismissException()">Skip</button>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">💰 Treasury Flow</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="treasury-balance">
+                            <div class="treasury-label">Available Balance</div>
+                            <div class="treasury-amount" id="treasuryAmount">£412,800</div>
+                            <div class="treasury-sub">across 4 accounts · MMF + GBP</div>
+                        </div>
+                        <div class="treasury-flow">
+                            <span>Insignis MMF</span>
+                            <span class="arrow">→</span>
+                            <span>HSBC GBP</span>
+                            <span class="amount" id="flowAmount">—</span>
+                        </div>
+                        <div class="treasury-flow">
+                            <span>HSBC GBP</span>
+                            <span class="arrow">→</span>
+                            <span>28 employees</span>
+                            <span class="amount" id="payoutAmount">—</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">📜 Activity Log</h3>
+                        <span style="font-size: 0.65rem; color: var(--text-muted); font-family: 'JetBrains Mono';" id="logCount">0 events</span>
+                    </div>
+                    <div class="card-body">
+                        <div class="activity-log" id="activityLog">
+                            <div style="color: var(--text-muted); font-size: 0.78rem; text-align: center; padding: 1rem;">
+                                Run payroll to see activity
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <div class="processing-overlay" id="processingOverlay">
+        <div class="pilot-animation">
+            <div class="pilot-ring r1"></div>
+            <div class="pilot-ring r2"></div>
+            <div class="pilot-ring r3"></div>
+            <div class="pilot-center">✈️</div>
+        </div>
+        <div class="processing-text">Initializing Payroll Pilot...</div>
+        <div class="processing-stage" id="processingStage">Connecting to PayFit...</div>
+        <div class="processing-progress">
+            <div class="processing-bar" id="processingBar"></div>
+        </div>
+    </div>
+
+    <div class="toast" id="toast">
+        <span class="toast-icon">✅</span>
+        <div>
+            <div class="toast-title" id="toastTitle">Success</div>
+            <div class="toast-message" id="toastMessage">Done</div>
+        </div>
+    </div>
+
+    <script>
+        const EMPLOYEES = [
+            { name: 'Aisha Patel', role: 'Engineering', amount: 7850, country: 'UK' },
+            { name: 'Marcus Chen', role: 'Product', amount: 8200, country: 'UK' },
+            { name: 'Sofia Romano', role: 'Design', amount: 6400, country: 'IT' },
+            { name: 'Liam Walsh', role: 'Engineering', amount: 7200, country: 'IE' },
+            { name: 'Yuki Tanaka', role: 'Engineering', amount: 9100, country: 'UK' },
+            { name: 'Emma Dubois', role: 'Sales', amount: 5800, country: 'FR' },
+            { name: 'Oluwaseun Adebayo', role: 'Engineering', amount: 8500, country: 'UK' },
+            { name: 'Klara Novak', role: 'Marketing', amount: 5200, country: 'CZ' },
+            { name: 'Diego Hernandez', role: 'Engineering', amount: 7800, country: 'ES' },
+            { name: 'Priya Sharma', role: 'Data', amount: 8200, country: 'UK' },
+            { name: 'Henrik Larsson', role: 'Engineering', amount: 9300, country: 'SE' },
+            { name: 'Amelia Foster', role: 'People', amount: 6100, country: 'UK' },
+            { name: 'Ravi Krishnan', role: 'Engineering', amount: 8400, country: 'UK' },
+            { name: 'Chiara Bianchi', role: 'Design', amount: 6300, country: 'IT' },
+            { name: 'Tobias Müller', role: 'Engineering', amount: 8900, country: 'DE' },
+            { name: 'Zara Ali', role: 'Product', amount: 7400, country: 'UK' },
+            { name: 'Felix Bergman', role: 'Engineering', amount: 8100, country: 'SE' },
+            { name: 'Naomi Tanaka', role: 'Sales', amount: 5600, country: 'UK' },
+            { name: 'Ahmed Hassan', role: 'Engineering', amount: 7900, country: 'UK' },
+            { name: 'Beatrice Volpe', role: 'Marketing', amount: 5400, country: 'IT' },
+            { name: 'Kenji Yamamoto', role: 'Data', amount: 7700, country: 'UK' },
+            { name: 'Mira Schmidt', role: 'Design', amount: 6500, country: 'DE' },
+            { name: 'Sanjay Reddy', role: 'Engineering', amount: 8800, country: 'UK' },
+            { name: 'Linnea Olsson', role: 'Product', amount: 7100, country: 'SE' },
+            { name: 'Joaquim Silva', role: 'Sales', amount: 5900, country: 'PT' },
+            { name: 'Hana Park', role: 'Engineering', amount: 8300, country: 'UK' },
+            { name: 'Mateo García', role: 'Engineering', amount: 7600, country: 'ES' },
+            { name: 'Imogen Clarke', role: 'People', amount: 6200, country: 'UK' }
+        ];
+
+        let isRunning = false;
+        let currentStage = 0;
+        let paidCount = 0;
+        let exceptionCount = 0;
+        let pendingException = null;
+        let runQueue = [];
+        let treasuryBalance = 412800;
+        let exceptionAtStage = null;
+        let injectedException = null;
+
+        function renderEmployees() {
+            const grid = document.getElementById('employeeGrid');
+            grid.innerHTML = EMPLOYEES.map((emp, i) => {
+                const initials = emp.name.split(' ').map(n => n[0]).join('');
+                return `
+                    <div class="employee-row" id="emp-${i}">
+                        <div class="employee-avatar">${initials}</div>
+                        <div class="employee-info">
+                            <div class="employee-name">${emp.name}</div>
+                            <div class="employee-meta">${emp.country} · ${emp.role}</div>
+                        </div>
+                        <div class="employee-amount">£${emp.amount.toLocaleString()}</div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function startPayroll() {
+            if (isRunning) return;
+            isRunning = true;
+            document.getElementById('runBtn').disabled = true;
+            document.getElementById('runStatus').textContent = 'INITIALIZING';
+
+            const overlay = document.getElementById('processingOverlay');
+            const bar = document.getElementById('processingBar');
+            const stage = document.getElementById('processingStage');
+            overlay.classList.add('active');
+
+            const stages = [
+                'Connecting to PayFit...',
+                'Pulling 28 payslips...',
+                'Aggregating bank balances...',
+                'Resolving approval chain...',
+                'Locking exchange rates...',
+                'Ready to execute.'
+            ];
+            let progress = 0;
+            let sIdx = 0;
+
+            const tick = setInterval(() => {
+                progress += Math.random() * 18 + 7;
+                if (progress > 100) progress = 100;
+                bar.style.width = progress + '%';
+                const ns = Math.floor((progress / 100) * stages.length);
+                if (ns !== sIdx && ns < stages.length) { sIdx = ns; stage.textContent = stages[ns]; }
+                if (progress >= 100) {
+                    clearInterval(tick);
+                    setTimeout(() => {
+                        overlay.classList.remove('active');
+                        runPipeline();
+                    }, 300);
+                }
+            }, 85);
+        }
+
+        async function runPipeline() {
+            const stagesData = [
+                { name: 'Ingest', activity: 'Pulled 28 payslips from PayFit', delay: 1200 },
+                { name: 'Reconcile', activity: 'Validated IBANs · checked balances', delay: 1400, exceptionType: 'iban' },
+                { name: 'Approval', activity: 'CFO approved via Slack (Jane Mitchell)', delay: 1300, exceptionType: 'ooo' },
+                { name: 'Fund', activity: 'Pulled £190k from Insignis MMF', delay: 1500, exceptionType: 'balance' },
+                { name: 'Execute', activity: 'Sending Faster Payments batch...', delay: 2500, doPayout: true },
+                { name: 'Confirm', activity: 'Run logged · audit trail sealed', delay: 1100 }
+            ];
+
+            document.getElementById('runStatus').textContent = 'RUNNING';
+
+            for (let i = 0; i < stagesData.length; i++) {
+                currentStage = i;
+                const stageEl = document.querySelector(`[data-stage="${i}"]`);
+                stageEl.classList.add('active');
+
+                // Update progress bar
+                const pct = (i / (stagesData.length - 1)) * 84; // 84% because pipeline-track is 8% to 92%
+                document.getElementById('pipelineProgress').style.width = pct + '%';
+
+                addActivity(stagesData[i].activity, `stage=${stagesData[i].name.toLowerCase()}`, 'teal');
+
+                // Check if we should trigger an injected exception at this stage
+                if (injectedException && stagesData[i].exceptionType === injectedException) {
+                    await sleep(900);
+                    triggerException(injectedException, i);
+                    return; // halt until resolved
+                }
+
+                if (stagesData[i].doPayout) {
+                    await runPayout();
+                }
+
+                await sleep(stagesData[i].delay);
+
+                stageEl.classList.remove('active');
+                stageEl.classList.add('done');
+            }
+
+            // Complete
+            document.getElementById('pipelineProgress').style.width = '100%';
+            document.getElementById('runStatus').textContent = 'COMPLETED ✓';
+            document.getElementById('runBtn').disabled = true;
+            isRunning = false;
+            addActivity('Payroll run completed successfully', `duration=${(stagesData.reduce((s, x) => s + x.delay, 0) / 1000).toFixed(1)}s`, 'emerald');
+            showToast('🎉 Payroll Complete', `£187,420 paid to 28 employees`, 'success');
+        }
+
+        async function runPayout() {
+            document.getElementById('flowAmount').textContent = '£190,000';
+            await sleep(600);
+            document.getElementById('payoutAmount').textContent = '£0 / £187,420';
+
+            for (let i = 0; i < EMPLOYEES.length; i++) {
+                const row = document.getElementById(`emp-${i}`);
+                row.classList.add('processing');
+                await sleep(60);
+                row.classList.remove('processing');
+                row.classList.add('paid');
+                paidCount++;
+                const paidSum = EMPLOYEES.slice(0, paidCount).reduce((s, e) => s + e.amount, 0);
+                document.getElementById('empProgress').textContent = `${paidCount} / 28 paid`;
+                document.getElementById('payoutAmount').textContent = `£${paidSum.toLocaleString()} / £187,420`;
+            }
+            treasuryBalance -= 187420;
+            document.getElementById('treasuryAmount').textContent = `£${treasuryBalance.toLocaleString()}`;
+        }
+
+        function injectException(type) {
+            injectedException = type;
+            const labels = { iban: 'Missing IBAN', ooo: 'Approver OOO', balance: 'Low Treasury' };
+            showToast(`🚨 Exception Armed`, `${labels[type]} will trigger on next relevant stage`, 'warning');
+        }
+
+        function triggerException(type, stageIdx) {
+            exceptionCount++;
+            document.getElementById('exCount').textContent = exceptionCount;
+            document.getElementById('runStatus').textContent = 'EXCEPTION';
+            const stageEl = document.querySelector(`[data-stage="${stageIdx}"]`);
+            stageEl.classList.remove('active');
+            stageEl.classList.add('exception');
+
+            const card = document.getElementById('exceptionCard');
+            const titles = {
+                iban: { title: 'Missing IBAN Detected', icon: '🏦', sub: 'reconciliation stage · 1 employee affected' },
+                ooo: { title: 'CFO Out of Office', icon: '👤', sub: 'approval stage · delegate routing required' },
+                balance: { title: 'Treasury Below Required Amount', icon: '💰', sub: 'fund stage · auto-sweep needed' }
+            };
+            const details = {
+                iban: `Employee <strong style="color:var(--amber)">Sofia Romano (IT)</strong> has no IBAN on file.<br><br>PayrollPilot can:<br>• Auto-pause this employee from this run<br>• Notify People Ops on Slack<br>• Continue with remaining 27 employees`,
+                ooo: `<strong style="color:var(--amber)">Jane Mitchell (CFO)</strong> is OOO until 30 May (set in Google Calendar).<br><br>PayrollPilot can:<br>• Auto-route to delegate <strong>David Park (Head of Finance)</strong> per policy<br>• Notify both via Slack with full payroll context<br>• Wait up to 4h SLA, then escalate`,
+                balance: `Treasury at <strong style="color:var(--amber)">£412,800</strong>, payroll needs <strong>£187,420</strong> from GBP pool. Direct GBP balance only £80k.<br><br>PayrollPilot can:<br>• Auto-sweep £150k from Insignis MMF (next-day liquidity)<br>• Notify CFO of sweep with rationale<br>• Resume payroll once funds settle`
+            };
+            const t = titles[type];
+            document.getElementById('excTitle').textContent = t.title;
+            document.getElementById('excSubtitle').textContent = t.sub;
+            document.getElementById('excIcon').textContent = t.icon;
+            document.getElementById('excDetail').innerHTML = details[type];
+            exceptionAtStage = stageIdx;
+            card.classList.add('active');
+
+            addActivity(`Exception: ${t.title}`, `stage=${stageIdx} type=${type}`, 'amber');
+            showToast('⚠️ Exception', `${t.title} — awaiting resolution`, 'warning');
+        }
+
+        async function resolveException() {
+            const card = document.getElementById('exceptionCard');
+            const type = injectedException;
+            const stageEl = document.querySelector(`[data-stage="${exceptionAtStage}"]`);
+
+            card.classList.remove('active');
+
+            const resolutions = {
+                iban: 'Sofia Romano paused · People Ops notified',
+                ooo: 'Routed to David Park (delegate) · approved',
+                balance: 'Swept £150k from Insignis MMF · funded'
+            };
+            addActivity(`Resolved: ${resolutions[type]}`, `auto_resolution`, 'emerald');
+
+            stageEl.classList.remove('exception');
+            stageEl.classList.add('done');
+
+            if (type === 'iban') {
+                // 27 employees instead of 28
+                document.getElementById('empCount').textContent = '27';
+            }
+            if (type === 'balance') {
+                treasuryBalance += 150000;
+                document.getElementById('treasuryAmount').textContent = `£${treasuryBalance.toLocaleString()}`;
+            }
+
+            injectedException = null;
+            document.getElementById('runStatus').textContent = 'RESUMING';
+            showToast('✅ Auto-Resolved', resolutions[type], 'success');
+            await sleep(700);
+
+            // Resume pipeline from next stage
+            const remaining = exceptionAtStage + 1;
+            await resumePipeline(remaining);
+        }
+
+        function dismissException() {
+            document.getElementById('exceptionCard').classList.remove('active');
+            addActivity('Exception dismissed by user', `manual_skip`, 'amber');
+            const stageEl = document.querySelector(`[data-stage="${exceptionAtStage}"]`);
+            stageEl.classList.remove('exception');
+            stageEl.classList.add('done');
+            injectedException = null;
+            resumePipeline(exceptionAtStage + 1);
+        }
+
+        async function resumePipeline(fromStage) {
+            const stagesData = [
+                { name: 'Ingest', activity: 'Resumed ingest', delay: 600 },
+                { name: 'Reconcile', activity: 'Reconciliation complete', delay: 800 },
+                { name: 'Approval', activity: 'Approval granted', delay: 800 },
+                { name: 'Fund', activity: 'Funded from treasury', delay: 900 },
+                { name: 'Execute', activity: 'Sending Faster Payments batch', delay: 2200, doPayout: true },
+                { name: 'Confirm', activity: 'Run sealed · audit complete', delay: 800 }
+            ];
+            document.getElementById('runStatus').textContent = 'RUNNING';
+            for (let i = fromStage; i < stagesData.length; i++) {
+                currentStage = i;
+                const stageEl = document.querySelector(`[data-stage="${i}"]`);
+                stageEl.classList.add('active');
+                const pct = (i / (stagesData.length - 1)) * 84;
+                document.getElementById('pipelineProgress').style.width = pct + '%';
+                addActivity(stagesData[i].activity, `stage=${stagesData[i].name.toLowerCase()}`, 'teal');
+                if (stagesData[i].doPayout) await runPayout();
+                await sleep(stagesData[i].delay);
+                stageEl.classList.remove('active');
+                stageEl.classList.add('done');
+            }
+            document.getElementById('pipelineProgress').style.width = '100%';
+            document.getElementById('runStatus').textContent = 'COMPLETED ✓';
+            isRunning = false;
+            addActivity('Payroll run completed with exception handling', `exceptions=${exceptionCount}`, 'emerald');
+            showToast('🎉 Payroll Complete', `Handled ${exceptionCount} exception(s)`, 'success');
+        }
+
+        function resetRun() {
+            isRunning = false;
+            currentStage = 0;
+            paidCount = 0;
+            exceptionCount = 0;
+            injectedException = null;
+            treasuryBalance = 412800;
+            document.querySelectorAll('.stage').forEach(s => s.classList.remove('active', 'done', 'exception'));
+            document.getElementById('pipelineProgress').style.width = '0%';
+            document.getElementById('runStatus').textContent = 'READY';
+            document.getElementById('runBtn').disabled = false;
+            document.getElementById('empProgress').textContent = '0 / 28 paid';
+            document.getElementById('empCount').textContent = '28';
+            document.getElementById('exCount').textContent = '0';
+            document.getElementById('flowAmount').textContent = '—';
+            document.getElementById('payoutAmount').textContent = '—';
+            document.getElementById('treasuryAmount').textContent = `£${treasuryBalance.toLocaleString()}`;
+            document.getElementById('exceptionCard').classList.remove('active');
+            document.getElementById('activityLog').innerHTML = `<div style="color: var(--text-muted); font-size: 0.78rem; text-align: center; padding: 1rem;">Run payroll to see activity</div>`;
+            document.getElementById('logCount').textContent = '0 events';
+            renderEmployees();
+            showToast('🔄 Reset', 'Ready for new run', 'success');
+        }
+
+        function addActivity(msg, meta, color = 'teal') {
+            const log = document.getElementById('activityLog');
+            if (log.querySelector('div[style*="text-align: center"]')) {
+                log.innerHTML = '';
+            }
+            const entry = document.createElement('div');
+            entry.className = `activity-entry ${color}`;
+            const icons = { teal: '⚡', emerald: '✓', amber: '⚠️', rose: '✕' };
+            const ts = new Date().toTimeString().substring(0, 8);
+            entry.innerHTML = `
+                <div class="activity-icon">${icons[color] || '•'}</div>
+                <div class="activity-content">
+                    <div class="activity-msg">${msg}</div>
+                    <div class="activity-meta">${ts} · ${meta}</div>
+                </div>
+            `;
+            log.insertBefore(entry, log.firstChild);
+            while (log.children.length > 30) log.removeChild(log.lastChild);
+            document.getElementById('logCount').textContent = `${log.children.length} events`;
+        }
+
+        function showToast(title, message, type = 'success') {
+            const toast = document.getElementById('toast');
+            const icon = type === 'warning' ? '⚠️' : type === 'error' ? '❌' : '✅';
+            toast.querySelector('.toast-icon').textContent = icon;
+            document.getElementById('toastTitle').textContent = title;
+            document.getElementById('toastMessage').textContent = message;
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 3200);
+        }
+
+        function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+        renderEmployees();
+    </script>
+</body>
+</html>

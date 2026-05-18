@@ -1,0 +1,202 @@
+// PayrollPilot data model.
+//
+// Design notes worth highlighting:
+//
+// 1. EmployeePayment is its own row per (run, employee). Each one carries
+//    its own idempotency key and child-workflow id so Temporal's retry
+//    semantics never produce a double-payment.
+//
+// 2. Exception is a first-class entity with a typed lifecycle, NOT a free-
+//    form error column. The state machine is:
+//      DETECTED ──► PENDING_RESOLUTION ──► AUTO_RESOLVED
+//                                      ──► MANUAL_RESOLVED
+//                                      ──► ESCALATED ──► (eventually one of above)
+//
+// 3. Approval supports delegate chains — the resolvedApprover field
+//    captures who actually approved (vs. the originally requested role)
+//    which matters for audit when the CFO is OOO and the Head of Finance
+//    signs off via the delegate policy.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model PayrollRun {
+  id              String          @id @default(cuid())
+  // External system anchors. Mirroring Temporal's run id in our DB
+  // means we can cross-reference our audit trail with Temporal's
+  // event history for replay debugging.
+  temporalRunId   String?         @unique
+  hrisRunRef      String?         // PayFit/Deel external run reference
+
+  periodStart     DateTime
+  periodEnd       DateTime
+  payDate         DateTime
+  currency        String          @default("GBP")
+
+  status          PayrollRunStatus @default(PENDING)
+  currentStage    PayrollStage    @default(INGEST)
+
+  expectedTotal   Decimal?        @db.Decimal(14, 2)
+  fundedTotal     Decimal?        @db.Decimal(14, 2)
+  paidTotal       Decimal?        @db.Decimal(14, 2)
+
+  triggeredBy     String
+  createdAt       DateTime        @default(now())
+  startedAt       DateTime?
+  completedAt     DateTime?
+
+  employees       EmployeePayment[]
+  exceptions      Exception[]
+  approvals       Approval[]
+  events          AuditEvent[]
+
+  @@index([status, payDate])
+  @@index([createdAt])
+}
+
+model EmployeePayment {
+  id              String          @id @default(cuid())
+  runId           String
+  run             PayrollRun      @relation(fields: [runId], references: [id])
+
+  // Stable id from the HRIS so retries / re-runs converge on the same row.
+  employeeRef     String
+  employeeName    String
+  iban            String?
+  bic             String?
+  country         String          @default("GB")
+  currency        String          @default("GBP")
+  grossAmount     Decimal         @db.Decimal(12, 2)
+  netAmount       Decimal         @db.Decimal(12, 2)
+
+  status          EmployeePaymentStatus @default(QUEUED)
+
+  // Deterministic key built from (runId, employeeRef, netAmount).
+  // The bank rejects duplicates with the same key — combined with
+  // Temporal's at-least-once activity retries, this is what stops
+  // anyone getting paid twice on a flaky network.
+  idempotencyKey  String          @unique
+  transactionRef  String?         // returned by the bank on success
+  childWorkflowId String?         @unique
+  settledAt       DateTime?
+  failureReason   String?
+
+  exceptions      Exception[]
+
+  @@index([runId, status])
+  @@index([employeeRef])
+}
+
+model Exception {
+  id              String          @id @default(cuid())
+  runId           String
+  run             PayrollRun      @relation(fields: [runId], references: [id])
+  employeeId      String?
+  employee        EmployeePayment? @relation(fields: [employeeId], references: [id])
+
+  type            ExceptionType
+  state           ExceptionState  @default(DETECTED)
+  detectedAtStage PayrollStage
+
+  // Structured payload — different shapes per ExceptionType.
+  // Code paths consume this via a typed discriminated union (see
+  // src/lib/types.ts) rather than free-form access.
+  payload         Json
+
+  resolution      Json?
+  resolvedAt      DateTime?
+  resolvedBy      String?         // userId or "auto"
+
+  createdAt       DateTime        @default(now())
+
+  @@index([runId, state])
+  @@index([type, state])
+}
+
+model Approval {
+  id              String              @id @default(cuid())
+  runId           String
+  run             PayrollRun          @relation(fields: [runId], references: [id])
+
+  requestedRole   String              // who SHOULD have approved (per policy)
+  resolvedApprover String?            // who actually approved (after delegate routing)
+  decision        ApprovalDecision?
+  decidedAt       DateTime?
+  reason          String?
+
+  slaHours        Int                 @default(4)
+  createdAt       DateTime            @default(now())
+
+  @@index([runId, decision])
+}
+
+model AuditEvent {
+  id              String          @id @default(cuid())
+  runId           String
+  run             PayrollRun      @relation(fields: [runId], references: [id])
+
+  stage           PayrollStage?
+  eventType       String
+  actor           String          // userId or "system"
+  payload         Json
+  timestamp       DateTime        @default(now())
+
+  @@index([runId, timestamp])
+}
+
+enum PayrollRunStatus {
+  PENDING
+  RUNNING
+  AWAITING_APPROVAL
+  AWAITING_EXCEPTION_RESOLUTION
+  EXECUTING
+  COMPLETED
+  FAILED
+  CANCELLED
+}
+
+enum PayrollStage {
+  INGEST
+  RECONCILE
+  APPROVAL
+  FUND
+  EXECUTE
+  CONFIRM
+}
+
+enum EmployeePaymentStatus {
+  QUEUED
+  EXCLUDED          // e.g. missing IBAN — pulled from this run, paid next cycle
+  EXECUTING
+  SETTLED
+  FAILED
+}
+
+enum ExceptionType {
+  MISSING_IBAN
+  INVALID_IBAN
+  APPROVER_UNAVAILABLE
+  INSUFFICIENT_TREASURY
+  HRIS_FETCH_FAILED
+  PAYMENT_REJECTED_BY_BANK
+  FX_RATE_STALE
+}
+
+enum ExceptionState {
+  DETECTED
+  PENDING_RESOLUTION
+  AUTO_RESOLVED
+  MANUAL_RESOLVED
+  ESCALATED
+}
+
+enum ApprovalDecision {
+  APPROVED
+  REJECTED
+}

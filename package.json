@@ -1,0 +1,36 @@
+{
+  "name": "payrollpilot",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Autonomous payroll with first-class exception handling. Demo for Round Treasury.",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "worker": "tsx src/temporal/worker.ts",
+    "db:migrate": "prisma migrate dev",
+    "db:generate": "prisma generate",
+    "db:seed": "tsx scripts/seed.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@prisma/client": "^5.20.0",
+    "@temporalio/activity": "^1.11.1",
+    "@temporalio/client": "^1.11.1",
+    "@temporalio/worker": "^1.11.1",
+    "@temporalio/workflow": "^1.11.1",
+    "ibantools": "^4.5.1",
+    "inngest": "^3.22.10",
+    "next": "14.2.5",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@types/node": "^20.14.10",
+    "@types/react": "^18.3.3",
+    "prisma": "^5.20.0",
+    "tsx": "^4.16.2",
+    "typescript": "^5.5.3"
+  }
+}
