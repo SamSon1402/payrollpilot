@@ -141,7 +141,7 @@ curl 'http://localhost:3000/api/payroll-runs/cmxxx.../employees?status=SETTLED'
 
 ---
 
-## What's not in this demo
+## What's not in this Project
 
 - **Auth + multi-tenancy.** Routes take `triggeredBy` from the body; in production this comes from a session JWT and a `withAuth(orgId, roles)` wrapper.
 - **Real PayFit / Plaid Payments wiring.** Stubs in `hris.ts` and `payments.ts` return shapes that match the real APIs. Real keys + the official SDK is the next commit.
